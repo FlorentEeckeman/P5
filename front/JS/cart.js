@@ -217,8 +217,9 @@ alert("c'est parti let's gooo " + contact.firstName + "  " + contact.lastName + 
     
   })
   .then(function(res) {
+    console.log(res);
     if (res.ok) {
-      console.log(res);
+      
       alert(res);
 
       return res.json();
