@@ -1,12 +1,4 @@
-
 let myStockage = localStorage;
-let itemIterator = 0;
-let urlPost = "http://localhost:3000/api/products/order"
-let urlBase = location.origin
-let urlIdOrder = urlBase+"/front/html/confirmation.html?id="
-let itemCart = []
-let itemsGroup = [];
-let itemsGroupe = [];
 let products = [];
 let contact = {
   firstName: "",
@@ -15,57 +7,55 @@ let contact = {
   city: "",
   email: "",
 };
-/*for(const obj in myStockage) {
-  let articles = JSON.parse(myStockage.getItem(obj));
+let itemsGroup = [];
 
-  if (articles !== null){
-    itemsGroup.push(articles)
-    console.log(articles);
-  }}
-  console.log(itemsGroup);
-  itemsGroup.sort(function(a, b){
-    if(a.id < b.id) { return -1; }
-    if(a.id > b.id) { return 1; }
-    return 0;
-  })*/
-  for(const obj in myStockage) {
-    let articles = JSON.parse(myStockage.getItem(obj));
-    if (articles !== null){
-      itemsGroupe.push(articles)
-    }}
-  for(const obj in myStockage) {
-    itemsGroupe.sort(function(a, b){
-      if(a.id < b.id) { return -1; }
-      if(a.id > b.id) { return 1; }
-      return 0;
-    })}
-console.log(itemsGroupe);
-for(let u =0 ; u < itemsGroupe.length; u++) {
-  const linkItemi = document.getElementById("cart__items");
-                  linkItemi.insertAdjacentHTML('beforeend', `<article class="cart__item" id="${u}"></article>`);
-                  let articles = JSON.parse(myStockage.getItem(u));
-                }
-for(let i =0 ; i< itemsGroupe.length; i++) {
-  let articles = JSON.parse(myStockage.getItem(i));
-
-  if (itemsGroupe[i] !== null){
-    itemsGroup.push(itemsGroupe[i])
-
-  }}
-let getPost = async function (element, i) {
-
-  let response = await fistStep(element, i)
-  return response 
+  for (let i=0; i<myStockage.length; i++){
+    let test = JSON.parse(myStockage.getItem(i));
+    
+     requetteItem(test.id, test.quantité, test.coleur);
+    }
+ function addListenerHTML(){
+    var elementChange = document.getElementsByName("itemQuantity");
+    let deleteItemCheck = document.querySelectorAll("p.deleteItem");
+    elementChange.forEach(element => {
+      element.addEventListener('change', function() {
+        if (element.value > 100){element.value = 100 };
+        console.log("enter");
+        let selectArticleChange = element.closest('.cart__item');
+        let articleIdChange = selectArticleChange.getAttribute("data-id");
+        let articleColorChange =selectArticleChange.getAttribute("data-color");
+        reductNumberItem(articleIdChange, articleColorChange, element.value,);
+      }); 
+    })
+    deleteItemCheck.forEach(element => {
+      let selectArticleDelete = element.closest('.cart__item');
+      let articleIdDelete = selectArticleDelete.getAttribute("data-id");
+      let articleColorDelete =selectArticleDelete.getAttribute("data-color");
+      element.addEventListener('click', function() {
+        deleteItem(articleIdDelete, articleColorDelete)
+        selectArticleDelete.remove();
+      }); 
+    });
+    totalPrice();
 }
-
-for (let i=0; i<myStockage.length; i++){
-
-  getPost(itemsGroup, i)
+function addEventLis(enter){
+ enter.forEach(element => {
+    console.log(element);
+    element.addEventListener('change', function() {
+      if (element.value > 100){element.value = 100 };
+      console.log("enter");
+      let selectArticleChange = element.closest('.cart__item');
+      let articleIdChange = selectArticleChange.getAttribute("data-id");
+      let articleColorChange =selectArticleChange.getAttribute("data-color");
+      reductNumberItem(articleIdChange, articleColorChange, element.value,);
+    }); 
+  });
 }
-  function fistStep(item, i){
-    return new Promise(function (resolve, reject) {
-
-    fetch("http://127.0.0.1:3000/api/products/"+ item[i].id)
+document.getElementById("order").addEventListener("click", function(event) { 
+  verifRegEx();
+});
+function requetteItem(enter, quantité, couleur){ 
+    fetch("http://127.0.0.1:3000/api/products/"+enter)
     .then((response) => {  
         if (!response.ok) {
         throw new Error(`HTTP error, status = ${response.status}`);
@@ -73,39 +63,37 @@ for (let i=0; i<myStockage.length; i++){
         return response.json();
     })
     .then((data) => {
-                const linkItem = document.getElementById(i);
-                linkItem.setAttribute("data-id",data._id);
-                linkItem.setAttribute("data-color",item[i].coleur);
+                const linkItem = document.getElementById("cart__items");
                 linkItem.insertAdjacentHTML('afterbegin',`
+                <article class="cart__item" data-id="${data._id}" data-color="${couleur}">
                 <div class="cart__item__img">
                   <img src="${data.imageUrl}" alt="${data.altTxt}" d'un canapé">
                 </div>
                 <div class="cart__item__content">
                   <div class="cart__item__content__description">
                     <h2>${data.name}</h2>
-                    <p>${item[i].coleur}</p>
+                    <p>${couleur}</p>
                     <p>${data.price}</p>
                   </div>
                   <div class="cart__item__content__settings">
                     <div class="cart__item__content__settings__quantity">
                       <p>Qté : </p>
-                      <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${item[i].quantité}">
+                      <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${quantité}">
                     </div>
                     <div class="cart__item__content__settings__delete">
                       <p class="deleteItem">Supprimer</p>
                     </div>
                   </div>
                 </div>
-                  `); 
-    }).catch((error) => {
-        const p = document.createElement("p");
-        p.appendChild(document.createTextNode(`Error: ${error.message}`));
-    }).then( () => {
-    let elementChange = document.getElementsByName("itemQuantity");
+              </article>`); 
+    })
+    .then(() => {
+      var elementChange = document.getElementsByName("itemQuantity");
     let deleteItemCheck = document.querySelectorAll("p.deleteItem");
     elementChange.forEach(element => {
       element.addEventListener('change', function() {
         if (element.value > 100){element.value = 100 };
+        console.log("enter");
         let selectArticleChange = element.closest('.cart__item');
         let articleIdChange = selectArticleChange.getAttribute("data-id");
         let articleColorChange =selectArticleChange.getAttribute("data-color");
@@ -117,23 +105,31 @@ for (let i=0; i<myStockage.length; i++){
       let articleIdDelete = selectArticleDelete.getAttribute("data-id");
       let articleColorDelete =selectArticleDelete.getAttribute("data-color");
       element.addEventListener('click', function() {
-       deleteItem(articleIdDelete, articleColorDelete);
+        deleteItem(articleIdDelete, articleColorDelete)
         selectArticleDelete.remove();
       }); 
     });
-    totalPrice();
-    resolve('ok')
-  }).catch((error) => { reject(error)})
-})
+      console.log(data);
+    }).catch((error) => {
+        const p = document.createElement("p");
+        p.appendChild(document.createTextNode(`Error: ${error.message}`));
+    });
 }
 
-document.getElementById("order").addEventListener("click", function(event) { 
-  verifRegEx();
-});
-
+function sortItem(){
+  for(const obj in myStockage) {
+    let articles = JSON.parse(myStockage.getItem(obj));
+    if (articles !== null){
+    itemsGroup.push(articles)
+    itemsGroup.sort(function(a, b){
+      if(a.id < b.id) { return -1; }
+      if(a.id > b.id) { return 1; }
+      return 0;
+    })}}
+}
 function reductNumberItem(id, color, quantity){
-  for(let i = 0; i< myStockage.length; i++) {
-    let test = JSON.parse(myStockage.getItem(i));
+  for(const obj in myStockage) {
+    let test = JSON.parse(myStockage.getItem(obj));
    if(test !== null && test.id == id ){
     if(test.coleur == color){
       let listAddItemToCard = { 
@@ -141,25 +137,27 @@ function reductNumberItem(id, color, quantity){
         "quantité" : quantity,
         "coleur" : color
     }
-      myStockage.setItem(i,JSON.stringify(listAddItemToCard))
+      myStockage.setItem(obj,JSON.stringify(listAddItemToCard))
       break;
     }
    }
-  }totalPrice()
+  }
+  sortItem()
+  totalPrice()
 }
 function deleteItem(id, color){
 for(const obj in myStockage) {
   let test = JSON.parse(myStockage.getItem(obj));
-  if(test != null){
  if(test.id == id){
   if(test.coleur == color){
     myStockage.removeItem(obj)
     break;
-  }}}}
+  }}}
+  sortItem()
   totalPrice()
-  sortData()
 }
   function totalPrice(){
+    let priceAdd;
     let priceCalc = 0;
     let quantityCalc = 0;
       fetch("http://127.0.0.1:3000/api/products/")
@@ -192,25 +190,6 @@ for(const obj in myStockage) {
     p.appendChild(document.createTextNode(`Error: ${error.message}`));
   });
   }
-  function sortData(){
-    itemsGroupe = []
-    for(const obj in myStockage) {
-      let articles = JSON.parse(myStockage.getItem(obj));
-      if (articles !== null){
-        itemsGroupe.push(articles);
-      }}
-      for(const obj in myStockage) {
-        itemsGroupe.sort(function(a, b){
-          if(a.id < b.id) { return -1; }
-          if(a.id > b.id) { return 1; }
-          return 0;
-        })}
-        myStockage.clear()
-      for( let i = 0; i < itemsGroupe.length; i++){
-        myStockage.setItem(i,JSON.stringify(itemsGroupe[i]))
-      }
-    console.log(itemsGroupe);
-  }
 
 function verifRegEx(){
   var firstName1 = document.getElementById('firstName').value;
@@ -228,28 +207,24 @@ alert("Prénom Non valide, Veuillez le ressaisir");
     return false;
   }
   else {contact.firstName = firstName1;
-
   }
   if(!lastName1.match(letter)){
 alert("Nom Non valide, Veuillez le ressaisir");
     return false;
   }
   else {contact.lastName = lastName1;
-
   }
   if(!address1.match(letterAndNumber)){
 alert("Addresse Non valide, Veuillez le ressaisir");
     return false;
   }
   else {contact.address = address1;
-
   }
   if(!city1.match(letter)){
 alert("Ville Non valide, Veuillez le ressaisir");
     return false;
   }
   else {contact.city = city1;
-
   }
   if(!email1.match(emailverif)){
 alert("email Non valide, Veuillez le ressaisir");
@@ -257,68 +232,44 @@ alert("email Non valide, Veuillez le ressaisir");
   }
   else {contact.email = email1;
     collectDatas();
-
   }
-  
 }  
-
-async function sendOrder(){
-  try {
-    const response = await fetch(urlPost, {
+function sendOrder(){
+alert("c'est parti let's gooo " + contact.firstName + "  " + contact.lastName + "  "  + contact.address + "  " + contact.city + "  " + contact.email + "  "+products );
+  fetch("http://localhost:3000/api/products/order", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify({contact,products})
+    body: JSON.stringify({contact,products}) 
   })
-  if (!response.ok) {
-    throw new Error(`Error! status: ${response.status}`);
-  }
-
-const result = await response.json();
-    return result;
-  } catch (err) {
-    console.log(err);
-  }
-}
-/*
-  (function(res) {
-    console.log(res);
-    return res.json();
-    }).then(function(value) {
-      alert(value)
-    let text = "Confirmez vous le bon de commande?\ncliquez sur OK pour valider ou Annuler.";
-  if (confirm(text) == true) {
-    
-    //myStockage.clear();
-    window.location.href = urlIdOrder + value.orderId;
-  } else {
+  .then(function(res) {
+    if (res.ok) {
+      return res.json();
+    }}).then(function(value) {
+      let text = "Confirmez vous le bon de commande?\ncliquez sur OK pour valider ou Annuler.";
+      if (confirm(text) == true) {
+        myStockage.clear();
+        alert(value.orderId);
+        window.location.href = `http://127.0.0.1:5500/front/html/confirmation.html?id=${value.orderId}`;
+      } else {
     text = "You canceled!";
   }
   }).catch((error) => {
     alert(error);
-  });;
-*/
+  });
+}
 function collectDatas() {
-  let test = false;
-  for(var x = 0 ; x < myStockage.length; x++) {
-    let articles = JSON.parse(myStockage.getItem(x));
+  let test = null;
+  for(const obj in myStockage) {
+    let articles = JSON.parse(myStockage.getItem(obj));
     if (articles !== null){
       products.push(articles.id);
       test = true;
     }
   }
-  if (test == true){
-    console.log(products, contact);
-    sendOrder().then((data) => {
-      let text = "Confirmez vous le bon de commande?\ncliquez sur OK pour valider ou Annuler.";
-      if (confirm(text) == true) {
-      window.location.href = urlIdOrder + data.orderId;
-     /*  //myStockage.clear();*/
-      } else {
-        text = "You canceled!";
-      }
-    });
+  if (test === true){
+    sendOrder();
   }
   else alert ("remplissez le caddy d'abord ^^");
   }

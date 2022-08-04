@@ -1,4 +1,4 @@
-
+let url = location.origin
 const myList = document.getElementById("items");
 
 fetch("http://127.0.0.1:3000/api/products")
@@ -12,7 +12,7 @@ fetch("http://127.0.0.1:3000/api/products")
   .then((data) => {
     for (const product of data) {
       const linkItem = document.createElement("a");
-      linkItem.setAttribute("href",`http://127.0.0.1:5500/front/html/product.html?id=${product._id}`);
+      linkItem.setAttribute("href", url+`/front/html/product.html?id=${product._id}`);
       const listItem = document.createElement("article");
      
       const nameElement = document.createElement("h3");

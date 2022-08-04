@@ -1,8 +1,10 @@
 const myProduct = document.getElementsByClassName("item")[0];
 let url = new URL(window.location.href);
 let id = url.searchParams.get("id");
-let monStockage = localStorage;
+let myStockage = localStorage;
+let KanapName = ""
 let indiceFind = false;
+let itemsGroup = [];
 disableSubmit(true);
 
 fetch("http://127.0.0.1:3000/api/products/" + id)
@@ -14,7 +16,7 @@ fetch("http://127.0.0.1:3000/api/products/" + id)
     return response.json();
   })
   .then((data) => 
-     {
+     {  KanapName = data.name
         let imgElement = document.createElement("img");
         imgElement.setAttribute("src",data.imageUrl);
         imgElement.setAttribute("alt",data.altTxt);
@@ -43,33 +45,31 @@ fetch("http://127.0.0.1:3000/api/products/" + id)
 
   });
 let myInput;
-
       document.getElementById("colors").addEventListener("change", function(){
         if (document.getElementById("colors").value !== "" ){
-
           disableSubmit(false);
         }
         else {
-          console.log('test');
           console.log(document.getElementById("colors").value + "hola");
           disableSubmit(true);
-        }
-        });
+        }});
 
 document.getElementById("addToCart").addEventListener("click", function() {
    
     let quantityProduct = document.getElementById("quantity").value;
     var select = document.getElementById('colors');
     var colorTake = select.options[select.selectedIndex].value;
-
+   
     let listAddToCard = { 
         "id": id,
         "quantité" : quantityProduct,
         "coleur" : colorTake,
     };
+    alert(`Vous avez ajouté ${quantityProduct} ${KanapName} de couleur ${colorTake} à votre panier`)
 
-    for(const obj in monStockage) {
-    let test = JSON.parse(monStockage.getItem(obj));
+    for(let obj= 0 ; obj< myStockage.length; obj++) {
+      console.log(obj);
+    let test = JSON.parse(myStockage.getItem(obj));
    if(test !== null && test.id == id ){
 
     if(test.coleur == colorTake){
@@ -84,13 +84,13 @@ document.getElementById("addToCart").addEventListener("click", function() {
         "coleur" : colorTake
     }
       indiceFind = true;
-      monStockage.setItem(obj,JSON.stringify(listAddItemToCard))
+      myStockage.setItem(obj,JSON.stringify(listAddItemToCard))
       break;
     }
    }
   }
-  if (indiceFind !== true){monStockage.setItem(monStockage.length,JSON.stringify(listAddToCard))};
-  console.log(monStockage);
+  if (indiceFind !== true){myStockage.setItem(myStockage.length,JSON.stringify(listAddToCard))};
+  console.log(myStockage);
 });
 
 function disableSubmit(disabled) {
@@ -105,16 +105,4 @@ function disableSubmit(disabled) {
   }
 }
 
-function addProduct(enter){
-    for(const obj in monStockage.id){
-    }
-}
-function compare( a, b ) {
-  if ( a.id < b.id ){
-    return -1;
-  }
-  if ( a.id > b.id ){
-    return 1;
-  }
-  return 0;
-}
+
