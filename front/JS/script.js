@@ -1,6 +1,8 @@
 let url = location.origin
 const myList = document.getElementById("items");
 
+//requête pour récupéré les données produit
+
 fetch("http://127.0.0.1:3000/api/products")
 .then((response) => {
     if (!response.ok) {
@@ -9,6 +11,7 @@ fetch("http://127.0.0.1:3000/api/products")
     }
     return response.json();
   })
+//requête pour récupéré les données produit
   .then((data) => {
     for (const product of data) {
       const linkItem = document.createElement("a");

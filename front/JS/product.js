@@ -6,7 +6,7 @@ let KanapName = ""
 let indiceFind = false;
 let itemsGroup = [];
 disableSubmit(true);
-
+// requête pour récupérer les infos du produits
 fetch("http://127.0.0.1:3000/api/products/" + id)
 .then((response) => {
     if (!response.ok) {
@@ -15,6 +15,7 @@ fetch("http://127.0.0.1:3000/api/products/" + id)
     }
     return response.json();
   })
+  // affiche dynamiquement les éléments du produit sur la page html
   .then((data) => 
      {  KanapName = data.name
         let imgElement = document.createElement("img");
@@ -44,18 +45,23 @@ fetch("http://127.0.0.1:3000/api/products/" + id)
     p.appendChild(document.createTextNode(`Error: ${error.message}`));
 
   });
-let myInput;
-      document.getElementById("colors").addEventListener("change", function(){
-        if (document.getElementById("colors").value !== "" ){
-          disableSubmit(false);
+
+
+ disableSubmit(false);
+
+// parametre l'ajour du produit au localStorage
+document.getElementById("addToCart").addEventListener("click", function() {
+
+   if (document.getElementById("colors").value == "" && document.getElementById("quantity").value == 0 ){
+          alert('Veuillez choisir une couleur et une quantitée svp' )
+        }
+        else if(document.getElementById("colors").value == ""){
+          alert('Veuillez choisir une couleur svp')
+        }
+        else if(document.getElementById("quantity").value == 0){
+          alert('Veuillez choisir une quantitée svp')
         }
         else {
-          console.log(document.getElementById("colors").value + "hola");
-          disableSubmit(true);
-        }});
-
-document.getElementById("addToCart").addEventListener("click", function() {
-   
     let quantityProduct = document.getElementById("quantity").value;
     var select = document.getElementById('colors');
     var colorTake = select.options[select.selectedIndex].value;
@@ -91,8 +97,8 @@ document.getElementById("addToCart").addEventListener("click", function() {
   }
   if (indiceFind !== true){myStockage.setItem(myStockage.length,JSON.stringify(listAddToCard))};
   console.log(myStockage);
-});
-
+}});
+// function permettant d'activé désactivé le bouton 'commander'
 function disableSubmit(disabled) {
   if (disabled) {
     document

@@ -15,65 +15,44 @@ let contact = {
   city: "",
   email: "",
 };
-/*for(const obj in myStockage) {
-  let articles = JSON.parse(myStockage.getItem(obj));
 
-  if (articles !== null){
-    itemsGroup.push(articles)
-    console.log(articles);
-  }}
-  console.log(itemsGroup);
-  itemsGroup.sort(function(a, b){
-    if(a.id < b.id) { return -1; }
-    if(a.id > b.id) { return 1; }
-    return 0;
-  })*/
-  for(const obj in myStockage) {
-    let articles = JSON.parse(myStockage.getItem(obj));
-    if (articles !== null){
-      itemsGroupe.push(articles)
-    }}
-  for(const obj in myStockage) {
-    itemsGroupe.sort(function(a, b){
-      if(a.id < b.id) { return -1; }
-      if(a.id > b.id) { return 1; }
-      return 0;
-    })}
-console.log(itemsGroupe);
+sortData()
+
+// ajoute un élément article avec un id pour chaque élément dans le loclstorage
+
 for(let u =0 ; u < itemsGroupe.length; u++) {
   const linkItemi = document.getElementById("cart__items");
-                  linkItemi.insertAdjacentHTML('beforeend', `<article class="cart__item" id="${u}"></article>`);
-                  let articles = JSON.parse(myStockage.getItem(u));
-                }
-for(let i =0 ; i< itemsGroupe.length; i++) {
-  let articles = JSON.parse(myStockage.getItem(i));
+  linkItemi.insertAdjacentHTML('beforeend', `<article class="cart__item" id="${u}"></article>`);
+}
 
-  if (itemsGroupe[i] !== null){
-    itemsGroup.push(itemsGroupe[i])
+//déclaration de la fonction qui va gérer l'ajout des nouveaux éléments 
 
-  }}
 let getPost = async function (element, i) {
-
   let response = await fistStep(element, i)
   return response 
 }
 
+// appel de la fonction selon le nombre d'élément dans le localStorage
+
 for (let i=0; i<myStockage.length; i++){
-
-  getPost(itemsGroup, i)
+  getPost(itemsGroupe, i)
 }
-  function fistStep(item, i){
-    return new Promise(function (resolve, reject) {
 
-    fetch("http://127.0.0.1:3000/api/products/"+ item[i].id)
-    .then((response) => {  
-        if (!response.ok) {
-        throw new Error(`HTTP error, status = ${response.status}`);
-        }
-        return response.json();
-    })
-    .then((data) => {
-                const linkItem = document.getElementById(i);
+// fonction qui ajout un élément sur la page HTML
+
+function fistStep(item, i){
+  return new Promise(function (resolve, reject) {
+
+  fetch("http://127.0.0.1:3000/api/products/"+ item[i].id)
+  .then((response) => {  
+    if (!response.ok) {
+      throw new Error(`HTTP error, status = ${response.status}`);
+    }
+    return response.json();
+  })
+// ajoute un élément canapé sur la page HTML
+  .then((data) => {
+              const linkItem = document.getElementById(i);
                 linkItem.setAttribute("data-id",data._id);
                 linkItem.setAttribute("data-color",item[i].coleur);
                 linkItem.insertAdjacentHTML('afterbegin',`
@@ -97,10 +76,13 @@ for (let i=0; i<myStockage.length; i++){
                   </div>
                 </div>
                   `); 
-    }).catch((error) => {
-        const p = document.createElement("p");
-        p.appendChild(document.createTextNode(`Error: ${error.message}`));
-    }).then( () => {
+  })
+  .catch((error) => {
+    const p = document.createElement("p");
+    p.appendChild(document.createTextNode(`Error: ${error.message}`));
+  })
+  // ajout des listerners permetttant d'appeler les fonction de recalcul du nombre d'article ou de suppression d'article
+  .then( () => {
     let elementChange = document.getElementsByName("itemQuantity");
     let deleteItemCheck = document.querySelectorAll("p.deleteItem");
     elementChange.forEach(element => {
@@ -117,7 +99,7 @@ for (let i=0; i<myStockage.length; i++){
       let articleIdDelete = selectArticleDelete.getAttribute("data-id");
       let articleColorDelete =selectArticleDelete.getAttribute("data-color");
       element.addEventListener('click', function() {
-       deleteItem(articleIdDelete, articleColorDelete);
+        deleteItem(articleIdDelete, articleColorDelete);
         selectArticleDelete.remove();
       }); 
     });
@@ -127,9 +109,14 @@ for (let i=0; i<myStockage.length; i++){
 })
 }
 
+// ajout du listener  permettant de lancer la commande 
+
 document.getElementById("order").addEventListener("click", function(event) { 
+  event.preventDefault()
   verifRegEx();
 });
+
+// fonction reduisant le nombre de canapé
 
 function reductNumberItem(id, color, quantity){
   for(let i = 0; i< myStockage.length; i++) {
@@ -140,77 +127,88 @@ function reductNumberItem(id, color, quantity){
         "id": id,
         "quantité" : quantity,
         "coleur" : color
-    }
+      }
       myStockage.setItem(i,JSON.stringify(listAddItemToCard))
       break;
     }
    }
   }totalPrice()
 }
+
+// fonction pour supprimer des canapé sur le localStorage
+
 function deleteItem(id, color){
 for(const obj in myStockage) {
   let test = JSON.parse(myStockage.getItem(obj));
   if(test != null){
- if(test.id == id){
-  if(test.coleur == color){
-    myStockage.removeItem(obj)
-    break;
+    if(test.id == id){
+      if(test.coleur == color){
+        myStockage.removeItem(obj)
+        break;
   }}}}
   totalPrice()
   sortData()
 }
-  function totalPrice(){
-    let priceCalc = 0;
-    let quantityCalc = 0;
-      fetch("http://127.0.0.1:3000/api/products/")
-      .then((response) => {
-    if (!response.ok) {
+
+// fonction calculant le pric total
+
+function totalPrice(){
+  let priceCalc = 0;
+  let quantityCalc = 0;
+    fetch("http://127.0.0.1:3000/api/products/")
+    .then((response) => {
+      if (!response.ok) {
       throw new Error(`HTTP error, status = ${response.status}`);
-    }
+      }
     return response.json();
   })
   .then((data) => {
-    for(const obj in myStockage) {
-      
+    for(const obj in myStockage) {  
       let test = JSON.parse(myStockage.getItem(obj));
       if(test !== null){
-      let priceId = test.id
-      for(const i in data){
-        if (test.id === data[i]._id){
-          priceId = data[i].price;
-        }
-      }
-      priceCalc += test.quantité * priceId;
-      quantityCalc += Number.parseInt(test.quantité);
+        let priceId = test.id
+          for(const i in data){
+            if (test.id === data[i]._id){
+            priceId = data[i].price;
+            }
+          }
+        priceCalc += test.quantité * priceId;
+        quantityCalc += Number.parseInt(test.quantité);
       }
     }
     document.getElementById("totalPrice").innerHTML = priceCalc;
     document.getElementById("totalQuantity").innerHTML = quantityCalc;
-  }
-  ).catch((error) => {
+  })
+  .catch((error) => {
     const p = document.createElement("p");
     p.appendChild(document.createTextNode(`Error: ${error.message}`));
   });
-  }
-  function sortData(){
-    itemsGroupe = []
-    for(const obj in myStockage) {
-      let articles = JSON.parse(myStockage.getItem(obj));
-      if (articles !== null){
-        itemsGroupe.push(articles);
-      }}
-      for(const obj in myStockage) {
-        itemsGroupe.sort(function(a, b){
-          if(a.id < b.id) { return -1; }
-          if(a.id > b.id) { return 1; }
-          return 0;
-        })}
-        myStockage.clear()
-      for( let i = 0; i < itemsGroupe.length; i++){
+}
+
+// fonction permettant le trie des canapé en fonction de leur type
+
+function sortData(){
+  itemsGroupe = []
+  // ajout des éléments du localStorage dans l'array itemsGroupe
+  for(const obj in myStockage) {
+    let articles = JSON.parse(myStockage.getItem(obj));
+    if (articles !== null){
+      itemsGroupe.push(articles);
+    }}
+    // trie les éléments d'itemGroupe
+  for(const obj in myStockage) {
+    itemsGroupe.sort(function(a, b){
+      if(a.id < b.id) { return -1; }
+      if(a.id > b.id) { return 1; }
+        return 0;
+      })}
+  myStockage.clear()
+    for( let i = 0; i < itemsGroupe.length; i++){
         myStockage.setItem(i,JSON.stringify(itemsGroupe[i]))
       }
-    console.log(itemsGroupe);
-  }
+}
+
+// fonction qui vérifie les champs du formulaire
 
 function verifRegEx(){
   var firstName1 = document.getElementById('firstName').value;
@@ -219,48 +217,54 @@ function verifRegEx(){
   var city1 = document.getElementById('city').value;
   var email1 = document.getElementById('email').value;
   let letter = /^[a-zA-Z]+$/
-  let letterAndNumber = /^[a-zA-Zéè0-9\s,'-]*$/;
+  let letterAndNumber = /^[a-zA-Z0-9\s\,\''\-]*$/;
   let emailverif = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
- 
+  const firstNameErrorMsg = document.getElementById("firstNameErrorMsg");
   if(!firstName1.match(letter)){
-    alert('regex first');
-alert("Prénom Non valide, Veuillez le ressaisir");
+    firstNameErrorMsg.innerHTML = 'Prénom Non valide, Veuillez le ressaisir'
     return false;
   }
   else {contact.firstName = firstName1;
-
+    firstNameErrorMsg.innerHTML = ''
   }
+  const lastNameErrorMsg = document.getElementById("lastNameErrorMsg");
   if(!lastName1.match(letter)){
-alert("Nom Non valide, Veuillez le ressaisir");
+    lastNameErrorMsg.innerHTML ="Nom Non valide, Veuillez le ressaisir"
     return false;
   }
   else {contact.lastName = lastName1;
-
+    lastNameErrorMsg.innerHTML =""
   }
-  if(!address1.match(letterAndNumber)){
-alert("Addresse Non valide, Veuillez le ressaisir");
+  const addressErrorMsg = document.getElementById("addressErrorMsg");
+  if(!address1.match(letterAndNumber) || address1 == ""  ){
+    addressErrorMsg.innerHTML = "Addresse Non valide, Veuillez le ressaisir"
     return false;
   }
   else {contact.address = address1;
-
+    console.log(document.getElementById('address').value)
+    addressErrorMsg.innerHTML = ''
   }
+  const cityErrorMsg = document.getElementById("cityErrorMsg");
   if(!city1.match(letter)){
-alert("Ville Non valide, Veuillez le ressaisir");
+  
+    cityErrorMsg.innerHTML = "Ville Non valide, Veuillez le ressaisir"
     return false;
   }
   else {contact.city = city1;
-
+    cityErrorMsg.innerHTML = ""
   }
+  const emailErrorMsg = document.getElementById("emailErrorMsg");
   if(!email1.match(emailverif)){
-alert("email Non valide, Veuillez le ressaisir");
+    emailErrorMsg.innerHTML = "email Non valide, Veuillez le ressaisir"
     return false;
   }
   else {contact.email = email1;
+    emailErrorMsg.innerHTML = ""
     collectDatas();
-
   }
-  
 }  
+ 
+// fonction qui envoie la requête Post pour passer la commande
 
 async function sendOrder(){
   try {
@@ -276,29 +280,14 @@ async function sendOrder(){
   }
 
 const result = await response.json();
-    return result;
+  return result;
   } catch (err) {
     console.log(err);
   }
 }
-/*
-  (function(res) {
-    console.log(res);
-    return res.json();
-    }).then(function(value) {
-      alert(value)
-    let text = "Confirmez vous le bon de commande?\ncliquez sur OK pour valider ou Annuler.";
-  if (confirm(text) == true) {
-    
-    //myStockage.clear();
-    window.location.href = urlIdOrder + value.orderId;
-  } else {
-    text = "You canceled!";
-  }
-  }).catch((error) => {
-    alert(error);
-  });;
-*/
+
+// fonction qui collecte les id des produit du panier
+
 function collectDatas() {
   let test = false;
   for(var x = 0 ; x < myStockage.length; x++) {
@@ -308,8 +297,10 @@ function collectDatas() {
       test = true;
     }
   }
+
+// appel la fonction d'envoie de la requête
+
   if (test == true){
-    console.log(products, contact);
     sendOrder().then((data) => {
       let text = "Confirmez vous le bon de commande?\ncliquez sur OK pour valider ou Annuler.";
       if (confirm(text) == true) {
