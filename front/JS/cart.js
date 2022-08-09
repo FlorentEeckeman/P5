@@ -19,17 +19,25 @@ let contact = {
 sortData()
 
 // ajoute un élément article avec un id pour chaque élément dans le loclstorage
-
+let linkItem = document.getElementById("cart__items");
 for(let u =0 ; u < itemsGroupe.length; u++) {
-  const linkItemi = document.getElementById("cart__items");
-  linkItemi.insertAdjacentHTML('beforeend', `<article class="cart__item" id="${u}"></article>`);
+  let li = document.createElement('article');
+  li.classList.add('cart__item');
+  li.setAttribute("id", u);
+  linkItem.appendChild(li)
 }
 
 //déclaration de la fonction qui va gérer l'ajout des nouveaux éléments 
 
 let getPost = async function (element, i) {
-  let response = await fistStep(element, i)
+  try{
+  const response = await fistStep(element, i)
   return response 
+  }
+  catch(error){
+    alert(error)
+  }
+  
 }
 
 // appel de la fonction selon le nombre d'élément dans le localStorage
@@ -55,27 +63,7 @@ function fistStep(item, i){
               const linkItem = document.getElementById(i);
                 linkItem.setAttribute("data-id",data._id);
                 linkItem.setAttribute("data-color",item[i].coleur);
-                linkItem.insertAdjacentHTML('afterbegin',`
-                <div class="cart__item__img">
-                  <img src="${data.imageUrl}" alt="${data.altTxt}" d'un canapé">
-                </div>
-                <div class="cart__item__content">
-                  <div class="cart__item__content__description">
-                    <h2>${data.name}</h2>
-                    <p>${item[i].coleur}</p>
-                    <p>${data.price}</p>
-                  </div>
-                  <div class="cart__item__content__settings">
-                    <div class="cart__item__content__settings__quantity">
-                      <p>Qté : </p>
-                      <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${item[i].quantité}">
-                    </div>
-                    <div class="cart__item__content__settings__delete">
-                      <p class="deleteItem">Supprimer</p>
-                    </div>
-                  </div>
-                </div>
-                  `); 
+                createElement(linkItem, data.name, data.price, item[i].coleur, item[i].quantité, data.imageUrl, data.altTxt)
   })
   .catch((error) => {
     const p = document.createElement("p");
@@ -109,6 +97,69 @@ function fistStep(item, i){
 })
 }
 
+// fonction créant chaque élément canapé affiché
+
+const createElement = (fatherElement, name, price, color, quantity, img, altTxt) => {
+  
+  const cart__item__img = document.createElement('div');
+  cart__item__img.setAttribute("class", "cart__item__img");
+  fatherElement.appendChild(cart__item__img);
+
+  const imgItem = document.createElement('img');
+  imgItem.setAttribute("src", img);
+  imgItem.setAttribute("alt", altTxt);
+  cart__item__img.appendChild(imgItem);
+
+  const cart__item__content = document.createElement('div');
+  cart__item__content.setAttribute("class", "cart__item__content");
+  fatherElement.appendChild(cart__item__content);
+
+  const cart__item__content__description = document.createElement('div');
+  cart__item__content__description.setAttribute("class", "cart__item__content__description");
+  cart__item__content.appendChild(cart__item__content__description);
+
+  const h2Element = document.createElement('h2');
+  h2Element.appendChild(document.createTextNode(name));
+  cart__item__content__description.appendChild(h2Element);
+
+  const p1Element = document.createElement('p');
+  p1Element.appendChild(document.createTextNode(color));
+  cart__item__content__description.appendChild(p1Element);
+
+  const p2Element = document.createElement('p');
+  p2Element.appendChild(document.createTextNode(price));
+  cart__item__content__description.appendChild(p2Element);
+
+  const cart__item__content__settings = document.createElement('div');
+  cart__item__content__settings.setAttribute("class", "cart__item__content__settings");
+  cart__item__content.appendChild(cart__item__content__settings);
+
+  const cart__item__content__settings__quantity = document.createElement('div');
+  cart__item__content__settings__quantity.setAttribute("class", "cart__item__content__settings__quantity");
+  cart__item__content__settings.appendChild(cart__item__content__settings__quantity);
+
+  const p3Element = document.createElement('p');
+  p3Element.appendChild(document.createTextNode("Qté : "+ quantity));
+  cart__item__content__settings__quantity.appendChild(p3Element);
+
+  const itemQuantity = document.createElement('input');
+  itemQuantity.setAttribute("type", "number");
+  itemQuantity.setAttribute("class", "itemQuantity");
+  itemQuantity.setAttribute("name", "itemQuantity");
+  itemQuantity.setAttribute("min", "1");
+  itemQuantity.setAttribute("max", "100");
+  itemQuantity.setAttribute("value", quantity);
+  cart__item__content__settings__quantity.appendChild(itemQuantity);
+
+  const cart__item__content__settings__delete = document.createElement('div');
+  cart__item__content__settings__delete.setAttribute("class", "cart__item__content__settings__delete");
+  cart__item__content__settings.appendChild(cart__item__content__settings__delete);
+
+  const p4Element = document.createElement('p');
+  p4Element.setAttribute("class", "deleteItem");
+  p4Element.appendChild(document.createTextNode('Supprimer'));
+  cart__item__content__settings__delete.appendChild(p4Element);
+}
 // ajout du listener  permettant de lancer la commande 
 
 document.getElementById("order").addEventListener("click", function(event) { 
